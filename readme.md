@@ -92,13 +92,6 @@ class MyCustomEventListener
 
 
 ```
-By default this package add a listener to the WebsocketsUpdate Event that writes the payload received to the cache, that can be accessed as following:
-``` php
-while(true) {
-    echo Cache::get($stream->getCacheKey());
-    sleep(1);
-}
-```
 
 ## Change log
 

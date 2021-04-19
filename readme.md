@@ -3,7 +3,7 @@ A websockets client to get data from crypto exchange Binance.
 
 ## Installation
 ``` bash
-composer require notf0und/laravel-ws-binance
+composer require notf0und/binance-ws
 ```
 
 

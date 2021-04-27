@@ -19,10 +19,15 @@ class Ratchet
 
     protected $loop;
 
+    protected int $id;
+
 
     public function __construct($params)
     {
         $this->params = $params;
+
+        pcntl_async_signals(true);
+        pcntl_signal(SIGINT, [$this, 'close']);
     }
 
 
@@ -52,6 +57,11 @@ class Ratchet
     public function connected($connection)
     {
         $this->connection = $connection;
+
+        if (!$this->hasMultipleParameters()) {
+            $this->connection->send($this->buildMessage('SUBSCRIBE'));
+        }
+
         $connection->on('message', [$this, 'message']);
     }
 
@@ -71,6 +81,11 @@ class Ratchet
     public function close()
     {
         if ($this->connection) {
+
+            if(!$this->hasMultipleParameters()) {
+                $this->connection->send($this->buildMessage('UNSUBSCRIBE'));
+            }
+
             $this->connection->close();
         }
 
@@ -94,19 +109,15 @@ class Ratchet
             return '';
         }
 
-        if (is_string($this->params)) {
-            return 'ws/' .  $this->params;
-        }
-
         if (is_array($this->params) && $this->hasMultipleParameters()) {
             return'stream?streams=' . implode('/', $this->params);
         }
 
-        return $this->params[0];
-    }
+        if (is_string($this->params)) {
+            return 'ws/' .  $this->params;
+        }
 
-    public function getRequest()
-    {
+        return 'ws/' . $this->params[0];
     }
 
     public function getHandshake(): string
@@ -120,5 +131,31 @@ class Ratchet
     public function hasMultipleParameters(): bool
     {
         return is_array($this->params) && count($this->params) > 1;
+    }
+
+    public function buildMessage(string $method)
+    {
+        $params =  (string) $this->params;
+
+        if (is_array($this->params)) {
+            $params = (string) $this->params[0];
+        }
+
+        return json_encode([
+            'method' => $method,
+            'params' => [
+                $params
+            ],
+            'id' => $this->getId(),
+        ]);
+    }
+
+    public function getId()
+    {
+       if(!isset($this->id)) {
+            $this->id = rand(1, 999999);
+        }
+
+        return $this->id;
     }
 }

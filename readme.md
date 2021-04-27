@@ -1,5 +1,5 @@
 # Binance-WS for Laravel
-A websockets client to get data from crypto exchange Binance.
+A websockets client to get data from cryptocurrency exchange Binance.
 
 ## Installation
 ``` bash
@@ -8,13 +8,13 @@ composer require notf0und/binance-ws
 
 
 ## Available streams:
-* ####AggregateTrade
-* ####AllBookTickers
-* ####IndividualSymbolBookTicker
-* ####IndividualSymbolMiniTicker
-* ####IndividualSymbolTicker
-* ####KlineCandlestick
-* ####Trade
+* AggregateTrade
+* AllBookTickers
+* IndividualSymbolBookTicker
+* IndividualSymbolMiniTicker
+* IndividualSymbolTicker
+* KlineCandlestick
+* Trade
 
 ## Usage example
 ``` php
@@ -37,9 +37,9 @@ $kline->setInterval('15m');
 
 // Create the client with the previously created streams
 $client = new Client([
-    (string) $allBookTickers,
-    $aggregateTrade->toString(),
-    $kline->toString()
+    $allBookTickers,
+    $aggregateTrade,
+    $kline
 ]);
 
 //Connect
@@ -108,7 +108,6 @@ If you discover any security related issues, please email gonzartur@gmail.com in
 ## Credits
 
 - [Fabián Gonzalo Artur de la Villarmois][link-author]
-- [All Contributors][link-contributors]
 
 ## License
 

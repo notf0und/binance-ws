@@ -43,8 +43,7 @@ class Ratchet
             [$this, 'connected'],
             [$this, 'error']
         );
-
-
+        
         $loop->run();
     }
 
@@ -58,9 +57,7 @@ class Ratchet
     {
         $this->connection = $connection;
 
-        if (!$this->hasMultipleParameters()) {
-            $this->connection->send($this->buildMessage('SUBSCRIBE'));
-        }
+        $this->connection->send($this->buildMessage('SUBSCRIBE'));
 
         $connection->on('message', [$this, 'message']);
     }
@@ -135,17 +132,17 @@ class Ratchet
 
     public function buildMessage(string $method)
     {
-        $params =  (string) $this->params;
-
         if (is_array($this->params)) {
-            $params = (string) $this->params[0];
+            foreach ($this->params as $param) {
+                $params[] = (string) $param;
+            }
+        } else {
+            $params[] =  (string) $this->params;
         }
 
         return json_encode([
             'method' => $method,
-            'params' => [
-                $params
-            ],
+            'params' => $params,
             'id' => $this->getId(),
         ]);
     }

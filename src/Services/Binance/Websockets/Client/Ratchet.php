@@ -4,6 +4,7 @@ namespace Notf0und\BinanceWS\Services\Binance\Websockets\Client;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Notf0und\BinanceWS\Events\MessageReceived;
+use Notf0und\BinanceWS\Services\Binance\Websockets\Stream;
 use Ratchet\Client\Connector;
 use React\EventLoop\Factory;
 use React\Socket\Connector as SocketConnector;
@@ -43,8 +44,7 @@ class Ratchet
             [$this, 'connected'],
             [$this, 'error']
         );
-
-
+        
         $loop->run();
     }
 
@@ -58,9 +58,7 @@ class Ratchet
     {
         $this->connection = $connection;
 
-        if (!$this->hasMultipleParameters()) {
-            $this->connection->send($this->buildMessage('SUBSCRIBE'));
-        }
+        $this->connection->send($this->buildMessage('SUBSCRIBE'));
 
         $connection->on('message', [$this, 'message']);
     }
@@ -81,11 +79,7 @@ class Ratchet
     public function close()
     {
         if ($this->connection) {
-
-            if(!$this->hasMultipleParameters()) {
-                $this->connection->send($this->buildMessage('UNSUBSCRIBE'));
-            }
-
+            $this->connection->send($this->buildMessage('UNSUBSCRIBE'));
             $this->connection->close();
         }
 
@@ -105,15 +99,15 @@ class Ratchet
      */
     public function getQuery(): string
     {
-        if (!is_string($this->params) && !is_array($this->params)) {
+        if (!is_string($this->params) && !is_array($this->params) && !($this->params instanceof Stream)) {
             return '';
         }
 
-        if (is_array($this->params) && $this->hasMultipleParameters()) {
+        if (is_array($this->params) && count($this->params) > 1) {
             return'stream?streams=' . implode('/', $this->params);
         }
 
-        if (is_string($this->params)) {
+        if (is_string($this->params) || $this->params instanceof Stream) {
             return 'ws/' .  $this->params;
         }
 
@@ -127,25 +121,20 @@ class Ratchet
             $this->getQuery()
         ]);
     }
-
-    public function hasMultipleParameters(): bool
-    {
-        return is_array($this->params) && count($this->params) > 1;
-    }
-
+    
     public function buildMessage(string $method)
     {
-        $params =  (string) $this->params;
-
         if (is_array($this->params)) {
-            $params = (string) $this->params[0];
+            foreach ($this->params as $param) {
+                $params[] = (string) $param;
+            }
+        } else {
+            $params[] =  (string) $this->params;
         }
 
         return json_encode([
             'method' => $method,
-            'params' => [
-                $params
-            ],
+            'params' => $params,
             'id' => $this->getId(),
         ]);
     }

@@ -4,6 +4,7 @@ namespace Notf0und\BinanceWS\Services\Binance\Websockets\Client;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Notf0und\BinanceWS\Events\MessageReceived;
+use Notf0und\BinanceWS\Services\Binance\Websockets\Stream;
 use Ratchet\Client\Connector;
 use React\EventLoop\Factory;
 use React\Socket\Connector as SocketConnector;
@@ -78,11 +79,7 @@ class Ratchet
     public function close()
     {
         if ($this->connection) {
-
-            if(!$this->hasMultipleParameters()) {
-                $this->connection->send($this->buildMessage('UNSUBSCRIBE'));
-            }
-
+            $this->connection->send($this->buildMessage('UNSUBSCRIBE'));
             $this->connection->close();
         }
 
@@ -102,15 +99,15 @@ class Ratchet
      */
     public function getQuery(): string
     {
-        if (!is_string($this->params) && !is_array($this->params)) {
+        if (!is_string($this->params) && !is_array($this->params) && !($this->params instanceof Stream)) {
             return '';
         }
 
-        if (is_array($this->params) && $this->hasMultipleParameters()) {
+        if (is_array($this->params) && count($this->params) > 1) {
             return'stream?streams=' . implode('/', $this->params);
         }
 
-        if (is_string($this->params)) {
+        if (is_string($this->params) || $this->params instanceof Stream) {
             return 'ws/' .  $this->params;
         }
 
@@ -124,12 +121,7 @@ class Ratchet
             $this->getQuery()
         ]);
     }
-
-    public function hasMultipleParameters(): bool
-    {
-        return is_array($this->params) && count($this->params) > 1;
-    }
-
+    
     public function buildMessage(string $method)
     {
         if (is_array($this->params)) {

@@ -18,12 +18,12 @@
         "BinanceWS"
     ],
     "require": {
-        "illuminate/support": "^8",
-        "ratchet/pawl": "^0.3.5"
+        "illuminate/support": "^10.1",
+        "ratchet/pawl": "^0.4.1"
     },
     "require-dev": {
-        "phpunit/phpunit": "~9.0",
-        "orchestra/testbench": "~5|~6"
+        "phpunit/phpunit": "^10.0",
+        "orchestra/testbench": "^8.0"
     },
     "autoload": {
         "psr-4": {
